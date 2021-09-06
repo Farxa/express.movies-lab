@@ -39,13 +39,53 @@ router.post('/celebrities', (req, res, next) => {
 router.get('/celebrities/:id', (req, res, next) => {
     Celebrity.findById(req.params.id)
                 .then(celebFromDB => {
-                    console.log(celebFromDB);
+                    //console.log(celebFromDB);
                     res.render('celebritiesFolder/show', { celebrity: celebFromDB});
                 })
                 .catch(err => {
                     next(err);
                 })
 })
+
+
+router.post('/celebrities/:id/delete', (req, res, next) => {
+	const celebId = req.params.id;
+	Celebrity.findByIdAndDelete(celebId)
+		.then(() => {
+			res.redirect('/celebrities');
+		})
+		.catch(err => {
+			next(err);
+		})
+});
+
+router.get('/celebrities/:id/edit', (req, res, next) => {
+    const celebId = req.params.id;
+    Celebrity.findById(celebId)
+    .then(celebrities => {
+        res.render('celebritiesFolder/edit', { celebrities });
+    })
+    .catch(err => {
+        next(err);
+    })
+});
+
+router.post('/celebrities/:id/edit', (req, res, next) => {
+    const celebId = req.params.id;
+    const {name, occupation, catchphrase, meme} = req.body;
+    Celebrity.findByIdAndUpdate(celebId, {
+        name: name,
+        occupation: occupation,
+        catchphrase: catchphrase,
+        meme: meme
+    }, { new: true })  
+    .then((updatedCeleb) => {
+        res.redirect(`/celebrities/${updatedCeleb._id}`);
+    })
+    .catch(err => {
+        next(err);
+    })
+});
 
 
 module.exports = router;
