@@ -14,6 +14,28 @@ router.get('/celebrities', (req, res, next) => {
                 })
 })
 
+router.get('/celebrities/new', (req, res, next) => {
+    res.render('celebritiesFolder/new.hbs');
+})
+
+
+router.post('/celebrities', (req, res, next) => {
+	console.log(req.body);
+	const { name, occupation, catchPhrase, meme } = req.body;
+	Cebelrity.create({
+		name: name,
+		occupation: occupation,
+		catchPhrase: catchPhrase,
+		meme: meme
+	})
+		.then(createdCeleb => {
+            
+			res.redirect(`celebrities/${createdCeleb._id}`);
+		})
+        .catch(err => res.render('celebritiesFolder/new'))
+
+});
+
 router.get('/celebrities/:id', (req, res, next) => {
     Celebrity.findById(req.params.id)
                 .then(celebFromDB => {
@@ -24,5 +46,6 @@ router.get('/celebrities/:id', (req, res, next) => {
                     next(err);
                 })
 })
+
 
 module.exports = router;
