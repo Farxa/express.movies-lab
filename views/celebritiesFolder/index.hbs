@@ -1,4 +1,6 @@
 <h2>This is the Celebrities Page</h2>
 {{#each celebList}}
-	<p>{{name}}</p>
+	<a href="/celebrities/{{_id}}">
+		<p>{{name}}</p>
+	</a>
 {{/each}}
