@@ -1,7 +1,6 @@
 const router = require("express").Router();
 const { render } = require("../app");
 const Celebrity = require("../models/Celebrity");
-const Cebelrity = require('../models/Celebrity');
 
 router.get('/celebrities', (req, res, next) => {
     Celebrity.find()

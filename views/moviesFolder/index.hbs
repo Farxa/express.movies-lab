@@ -1,0 +1,10 @@
+<h2>This is the movies Page</h2>
+{{#each movie}}
+
+	<a href="/movies/{{id}}">
+		<p>{{title}}</p>
+	</a>
+	  
+{{/each}}
+
+<a href="/movies/new">Add a new movie to the database</a>
