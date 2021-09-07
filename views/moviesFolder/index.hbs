@@ -1,9 +1,18 @@
-<h2>This is the movies Page</h2>
-{{#each movie}}
+<h2>This is the movies Page 📽</h2>
+{{#each moviesList}}
 
-	<a href="/movies/{{id}}">
-		<p>{{title}}</p>
+	<h3>Title: {{title}}</h3>
+	<p>Genre: {{genre}}</p>
+	<p>Plot: {{plot}}</p>
+	{{#each cast}}
+		<a href="/celebrities/{{id}}">
+		<p>{{name}}</p>
 	</a>
+	{{/each}}
+
+	<form action="/movies/{{id}}/edit" method="GET">
+  		<button type="submit">Edit movie</button>
+  	</form>
 	  
 {{/each}}
 

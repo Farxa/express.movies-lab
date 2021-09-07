@@ -3,15 +3,7 @@ const { render } = require("../app");
 const Celebrity = require("../models/Celebrity");
 const Movie = require("../models/Movie");
 
-router.get('/movies', (req, res, next) => {
-    Movie.find()
-                .then(moviesFromDB => {
-                    res.render('moviesFolder', { movies: moviesFromDB });
-                })
-                .catch(err => {
-                    next(err);
-                })
-})
+
 router.get('/movies/new', (req, res, next) => {
     Celebrity.find()
 		.then(celebsFromDB => {
@@ -24,6 +16,7 @@ router.get('/movies/new', (req, res, next) => {
 })
 
 
+
 router.post('/movies', (req, res, next) => {
 	//console.log(req.body);
 	const { title, genre, plot, cast } = req.body;
@@ -34,17 +27,28 @@ router.post('/movies', (req, res, next) => {
 		cast: cast
 	})
 		.then(createdMovie => {
-			console.log(createdMovie)
-            
+			//console.log(createdMovie)
 			res.redirect(`movies/${createdMovie._id}`);
 		})
-        .catch(err => res.render('moviesFolder/new'))
+        .catch(err => res.render('moviesFolder'))
 });
+
+
+router.get('/movies', (req, res, next) => {
+    Movie.find().populate('cast')
+	.then(moviesFromDB => {
+                 res.render('moviesFolder', { moviesList: moviesFromDB });
+                })
+                .catch(err => {
+                    next(err);
+                })
+})
+
 
 router.get('/movies/:id', (req, res, next) => {
     Movie.findById(req.params.id).populate('cast')
 		.then(movieFromDB => {
-			console.log(movieFromDB);
+			//console.log(movieFromDB);
 			
 			res.render('moviesFolder/show', { movie: movieFromDB });
 		})
@@ -52,6 +56,35 @@ router.get('/movies/:id', (req, res, next) => {
 			next(err);
 		})
 })
+
+router.get('/movies/:id/edit', (req, res, next) => {
+    const movieId = req.params.id;
+    Movie.findById(movieId)
+    .then(movies => {
+        res.render('moviesFolder/edit', { movies: movies });
+    })
+    .catch(err => {
+        next(err);
+    })
+});
+
+router.post('/movies/:id/edit', (req, res, next) => {
+    const movieId = req.params.id;
+    const {title, genre, plot, cast} = req.body;
+    Movie.findByIdAndUpdate(movieId, {
+        title: title,
+        genre: genre,
+        plot: plot,
+        cast: cast
+    }, { new: true })  
+    .then((updatedMovie) => {
+        res.redirect(`/movies/${updatedMovie._id}`);
+    })
+    .catch(err => {
+        next(err);
+    })
+});
+
 
 
 module.exports = router;
