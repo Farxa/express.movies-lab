@@ -58,14 +58,24 @@ router.get('/movies/:id', (req, res, next) => {
 })
 
 router.get('/movies/:id/edit', (req, res, next) => {
-    const movieId = req.params.id;
-    Movie.findById(movieId)
-    .then(movies => {
-        res.render('moviesFolder/edit', { movies: movies });
+	const movieId = req.params.id;
+    const movie = Movie.findById(movieId).populate('cast') 
+    const celebrities = Celebrity.find()
+
+    Promise.all([movie, celebrities]).then(data => {
+        const [ movie, celebrities ] = data
+
+        celebrities.forEach(celebrity => {
+            for (let i = 0; i < movie.cast.length; i++) {
+                if (movie.cast[i].id === celebrity.id) {
+                    celebrity.selected = true;
+                }
+            }
+        });
+        res.render('moviesFolder/edit', { movie: movie, celebrities: celebrities })
+		console.log(celebrities);
     })
-    .catch(err => {
-        next(err);
-    })
+    .catch(err => console.log(err))
 });
 
 router.post('/movies/:id/edit', (req, res, next) => {
