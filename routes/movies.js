@@ -64,16 +64,15 @@ router.get('/movies/:id/edit', (req, res, next) => {
 
     Promise.all([movie, celebrities]).then(data => {
         const [ movie, celebrities ] = data
+        let options = '';
+        let selected = '';
 
-        celebrities.forEach(celebrity => {
-            for (let i = 0; i < movie.cast.length; i++) {
-                if (movie.cast[i].id === celebrity.id) {
-                    celebrity.selected = true;
-                }
-            }
+        celebrities.forEach(celeb => {
+        selected = movie.cast.map(el => el._id).includes(celeb._id) ? ' selected' : '';
+        options += `<option value="${celeb._id}" ${selected}>${celeb.name}</option>`;
         });
-        res.render('moviesFolder/edit', { movie: movie, celebrities: celebrities })
-		console.log(celebrities);
+
+        res.render('moviesFolder/edit', { movie, options})
     })
     .catch(err => console.log(err))
 });
