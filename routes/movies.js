@@ -3,8 +3,24 @@ const { render } = require("../app");
 const Celebrity = require("../models/Celebrity");
 const Movie = require("../models/Movie");
 
+router.get('/', (req, res, next) => {
+    // we have to populate the cast
+    // remove .populate and log the movies to see why
+    // checkout https://mongoosejs.com/docs/populate.html#deep-populate
+    // for more info on how to populate with nested objects
+    Movie.find().populate('cast')
+	.then(moviesFromDB => {
+        console.log(moviesFromDB);
+                 res.render('moviesFolder', { moviesList: moviesFromDB });
+                })
+                .catch(err => {
+                    next(err);
+                })
+})
 
-router.get('/movies/new', (req, res, next) => {
+
+
+router.get('/new', (req, res, next) => {
     Celebrity.find()
 		.then(celebsFromDB => {
 			//console.log(celebsFromDB);
@@ -15,69 +31,47 @@ router.get('/movies/new', (req, res, next) => {
         })
 })
 
-
-
-router.post('/movies', (req, res, next) => {
+router.post('/', (req, res, next) => {
 	//console.log(req.body);
 	const { title, genre, plot, cast } = req.body;
+    console.log(cast);
 	Movie.create({
 		title: title,
 		genre: genre,
 		plot: plot,
 		cast: cast
 	})
-		.then(createdMovie => {
+		.then(() => {
 			//console.log(createdMovie)
-			res.redirect(`movies/${createdMovie._id}`);
+			res.redirect(`/movies`);
 		})
         .catch(err => res.render('moviesFolder'))
 });
 
 
-router.get('/movies', (req, res, next) => {
-    Movie.find().populate('cast')
-	.then(moviesFromDB => {
-                 res.render('moviesFolder', { moviesList: moviesFromDB });
-                })
-                .catch(err => {
-                    next(err);
-                })
-})
-
-
-router.get('/movies/:id', (req, res, next) => {
-    Movie.findById(req.params.id).populate('cast')
-		.then(movieFromDB => {
-			//console.log(movieFromDB);
-			
-			res.render('moviesFolder/show', { movie: movieFromDB });
-		})
-		.catch(err => {
-			next(err);
-		})
-})
-
-router.get('/movies/:id/edit', (req, res, next) => {
-	const movieId = req.params.id;
-    const movie = Movie.findById(movieId).populate('cast') 
-    const celebrities = Celebrity.find()
-
-    Promise.all([movie, celebrities]).then(data => {
-        const [ movie, celebrities ] = data
+router.get('/:id/edit', (req, res, next) => {
+	Movie.findById(req.params.id).populate('cast')
+    .then(movie => {
+      console.log(movie);
+      Celebrity.find().then(celebrities => {
+        // console.log(movie.cast);
         let options = '';
         let selected = '';
-
         celebrities.forEach(celeb => {
-        selected = movie.cast.map(el => el._id).includes(celeb._id) ? ' selected' : '';
-        options += `<option value="${celeb._id}" ${selected}>${celeb.name}</option>`;
+          selected = movie.cast.map(actor => actor._id).includes(celeb._id) ? ' selected' : '';
+          options += `<option value="${celeb._id}" ${selected}>${celeb.name}</option>`;
         });
-
-        res.render('moviesFolder/edit', { movie, options})
+        console.log(options);
+        res.render('moviesFolder/edit', { movie, celebrities });
+        // res.render('moviesFolder/edit', { movie, options });
+      })
     })
-    .catch(err => console.log(err))
+    .catch(err => {
+      next(err);
+    })
 });
 
-router.post('/movies/:id/edit', (req, res, next) => {
+router.post('/:id', (req, res, next) => {
     const movieId = req.params.id;
     const {title, genre, plot, cast} = req.body;
     Movie.findByIdAndUpdate(movieId, {
@@ -85,9 +79,9 @@ router.post('/movies/:id/edit', (req, res, next) => {
         genre: genre,
         plot: plot,
         cast: cast
-    }, { new: true })  
-    .then((updatedMovie) => {
-        res.redirect(`/movies/${updatedMovie._id}`);
+    })  
+    .then(() => {
+        res.redirect(`/movies`);
     })
     .catch(err => {
         next(err);
